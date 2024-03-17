@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -65,13 +66,18 @@ func next(c echo.Context) error {
 		evals[mapkey] = float32(tmp) / float32(len(ngens))
 	}
 
+	fmt.Println(evals)
+
 	npos := -1
 	evalMax := float32(-1.0)
 	for mapKey, value := range evals {
 		if value >= evalMax {
+			evalMax = value
 			npos = mapKey
 		}
 	}
+
+	fmt.Println(npos)
 
 	var selfHead Coordinate
 	for _, head := range body.Heads {
@@ -81,7 +87,10 @@ func next(c echo.Context) error {
 		}
 	}
 
-	result := ops(npos, key(selfHead.CoordX, selfHead.CoordY))
+	fmt.Println(key(selfHead.CoordX, selfHead.CoordY))
+
+	result := ops(key(selfHead.CoordX, selfHead.CoordY), npos)
+	fmt.Println(result)
 
 	return c.JSON(http.StatusOK, ResponseModel{Ops: result})
 }
@@ -258,16 +267,17 @@ func eval(body RequestBody) map[int]int {
 }
 
 func ops(from int, to int) string {
-	diffX := (to / 100) - (from / 100)
-	diffY := (to % 100) - (from % 100)
+	diff := to - from
 
-	if diffX == 0 && diffY == -1 {
+	fmt.Println(diff)
+
+	if diff == -1 {
 		return "up"
-	} else if diffX == 1 && diffY == 0 {
+	} else if diff == 100 {
 		return "right"
-	} else if diffX == -1 && diffY == 0 {
+	} else if diff == -100 {
 		return "left"
-	} else if diffX == 0 && diffY == 1 {
+	} else if diff == 1 {
 		return "down"
 	} else {
 		return "checkmated"
