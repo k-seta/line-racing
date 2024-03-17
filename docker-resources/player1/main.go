@@ -260,7 +260,7 @@ func eval(body RequestBody) map[int]int {
 	}
 
 	// 各マスへの距離が threshold 以下かつ自分しか到達できないマス目の合計を計算
-	threshold := 15
+	threshold := 30
 	for y := 0; y < len(body.Board); y++ {
 		for x := 0; x < len(body.Board[y]); x++ {
 			tmp := []int{}
