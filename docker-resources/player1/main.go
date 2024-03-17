@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -66,8 +65,6 @@ func next(c echo.Context) error {
 		evals[mapkey] = float32(tmp) / float32(len(ngens))
 	}
 
-	fmt.Println(evals)
-
 	npos := -1
 	evalMax := float32(-1.0)
 	for mapKey, value := range evals {
@@ -77,8 +74,6 @@ func next(c echo.Context) error {
 		}
 	}
 
-	fmt.Println(npos)
-
 	var selfHead Coordinate
 	for _, head := range body.Heads {
 		if head.ID == body.ID {
@@ -87,10 +82,7 @@ func next(c echo.Context) error {
 		}
 	}
 
-	fmt.Println(key(selfHead.CoordX, selfHead.CoordY))
-
 	result := ops(key(selfHead.CoordX, selfHead.CoordY), npos)
-	fmt.Println(result)
 
 	return c.JSON(http.StatusOK, ResponseModel{Ops: result})
 }
@@ -141,6 +133,11 @@ func next_generation(body RequestBody) map[int][]RequestBody {
 
 	nheads := [][]Coordinate{[]Coordinate{}}
 	for _, head := range body.Heads {
+
+		if len(candidates[head.ID]) == 0 {
+			continue
+		}
+
 		memo := [][]Coordinate{}
 		for _, tmp := range nheads {
 			for _, candidate := range candidates[head.ID] {
@@ -268,8 +265,6 @@ func eval(body RequestBody) map[int]int {
 
 func ops(from int, to int) string {
 	diff := to - from
-
-	fmt.Println(diff)
 
 	if diff == -1 {
 		return "up"
