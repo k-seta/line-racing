@@ -147,17 +147,37 @@ func next_generation(body RequestBody) map[int][]RequestBody {
 		nheads = memo
 	}
 
+	// 相手が詰んだ場合、通った線が消えるので、先に消しておく
+	var nBaseboard [][]int
+	sliceCopy(body.Board, &nBaseboard)
+	for _, head := range body.Heads {
+		if len(candidates[head.ID]) == 0 {
+			for y := 0; y < len(nBaseboard); y++ {
+				for x := 0; x < len(nBaseboard[y]); x++ {
+					if nBaseboard[y][x] == head.ID {
+						nBaseboard[y][x] = 0
+					}
+				}
+			}
+		}
+	}
+
 	nbodies := map[int][]RequestBody{}
 	for _, heads := range nheads {
+
+		// deep copy
 		var nboard [][]int
-		sliceCopy(body.Board, &nboard)
+		sliceCopy(nBaseboard, &nboard)
+
 		var mapkey int
 		for _, head := range heads {
 			nboard[head.CoordY][head.CoordX] = head.ID
+
 			if head.ID == body.ID {
 				mapkey = key(head.CoordX, head.CoordY)
 			}
 		}
+
 		if _, ok := nbodies[mapkey]; ok {
 			nbodies[mapkey] = append(nbodies[mapkey], RequestBody{ID: body.ID, Heads: heads, Board: nboard})
 		} else {
