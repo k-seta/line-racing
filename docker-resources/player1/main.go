@@ -60,7 +60,7 @@ func next(c echo.Context) error {
 	for mapkey, ngens := range candidates {
 		tmp := 0
 		for _, ngen := range ngens {
-			tmp += eval(ngen)[body.ID]
+			tmp += eval(ngen)
 		}
 		evals[mapkey] = float32(tmp) / float32(len(ngens))
 	}
@@ -188,7 +188,7 @@ func next_generation(body RequestBody) map[int][]RequestBody {
 	return nbodies
 }
 
-func eval(body RequestBody) map[int]int {
+func eval(body RequestBody) int {
 	// 初期化処理
 	// graph の node 作成
 	graph := simple.NewDirectedGraph()
@@ -281,7 +281,16 @@ func eval(body RequestBody) map[int]int {
 		}
 	}
 
-	return evals
+	result := 0
+	for _, head := range body.Heads {
+		if body.ID == head.ID {
+			result += evals[head.ID]
+		} else {
+			result += evals[body.ID] - evals[head.ID]
+		}
+	}
+
+	return result
 }
 
 func ops(from int, to int) string {
