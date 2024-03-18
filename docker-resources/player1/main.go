@@ -259,23 +259,24 @@ func eval(body RequestBody) map[int]int {
 		evals[head.ID] = 0
 	}
 
-	// 各マスへの距離が threshold 以下かつ自分しか到達できないマス目の合計を計算
+	// 各マスへの距離が threshold 以下のマス目の合計を計算
 	threshold := 30
 	for y := 0; y < len(body.Board); y++ {
 		for x := 0; x < len(body.Board[y]); x++ {
-			tmp := []int{}
 			for _, head := range body.Heads {
 
 				// from head to (x, y)
 				_, length := shortests[head.ID].To(int64(key(x, y)))
 
 				if length < float64(threshold) {
-					tmp = append(tmp, head.ID)
+					evals[head.ID]++
 				}
-			}
 
-			if len(tmp) == 1 {
-				evals[tmp[0]]++
+				for _, ohead := range body.Heads {
+					if ohead.ID != head.ID && ohead.CoordX == head.CoordX && ohead.CoordY == head.CoordY {
+						evals[head.ID] -= 100
+					}
+				}
 			}
 		}
 	}
