@@ -53,17 +53,7 @@ func next(c echo.Context) error {
 		return err
 	}
 
-	candidates := next_generation(body)
-
-	// 候補手ごとの自 ID 評価値の平均を取得
-	evals := map[int]float32{}
-	for mapkey, ngens := range candidates {
-		tmp := 0
-		for _, ngen := range ngens {
-			tmp += eval(ngen)
-		}
-		evals[mapkey] = float32(tmp) / float32(len(ngens))
-	}
+	evals := recursiveEval(body, 0)
 
 	npos := -1
 	evalMax := float32(-1.0)
@@ -291,6 +281,26 @@ func eval(body RequestBody) int {
 	}
 
 	return result
+}
+
+func recursiveEval(body RequestBody, generation int) map[int]float32 {
+
+	evals := map[int]float32{}
+	if generation == 0 {
+		candidates := next_generation(body)
+
+		// 候補手ごとの自 ID 評価値の平均を取得
+		for mapkey, ngens := range candidates {
+			tmp := 0
+			for _, ngen := range ngens {
+				tmp += eval(ngen)
+			}
+			evals[mapkey] = float32(tmp) / float32(len(ngens))
+		}
+		return evals
+	}
+
+	return evals
 }
 
 func ops(from int, to int) string {
