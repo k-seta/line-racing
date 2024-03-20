@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"math"
 	"net/http"
 
@@ -55,9 +54,12 @@ func next(c echo.Context) error {
 		return err
 	}
 
-	evals := recursiveEval(body, 0)
-	fmt.Println(body.Heads)
-	fmt.Println(evals)
+	genaration := 0
+	if len(body.Heads) == 2 {
+		genaration = 2
+	}
+
+	evals := recursiveEval(body, genaration)
 
 	npos := -1
 	evalMax := math.Inf(-1)
@@ -313,9 +315,9 @@ func recursiveEval(body RequestBody, generation int) map[int]float64 {
 	} else {
 		for mapkey, ngens := range candidates {
 			evalMax := math.Inf(-1)
-			tmp := float64(0)
 			for _, ngen := range ngens {
 				recEvals := recursiveEval(ngen, generation-1)
+				tmp := float64(0)
 				for _, score := range recEvals {
 					tmp += score
 				}
