@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -54,6 +55,8 @@ func next(c echo.Context) error {
 	}
 
 	evals := recursiveEval(body, 0)
+	fmt.Println(body.Heads)
+	fmt.Println(evals)
 
 	npos := -1
 	evalMax := float32(-1.0)
