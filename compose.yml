@@ -9,6 +9,16 @@ x-fastapi: &fastapi
     timeout: 5s
     retries: 5
 
+x-player1-enemy: &player1-enemy
+  image: local/player1-enemy:latest
+  build:
+    context: docker-resources/player1-enemy
+  healthcheck:
+    test: "curl -f http://localhost:8000/health || exit 1"
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
 services:
   line-racing:
     image: nginx:alpine3.18
@@ -40,20 +50,14 @@ services:
       timeout: 5s
       retries: 5
   player2:
-    <<: *fastapi
-    volumes:
-      - ./docker-resources/player2:/app:cached
+    <<: *player1-enemy
     ports:
       - 8002:8000
   player3:
-    <<: *fastapi
-    volumes:
-      - ./docker-resources/player3:/app:cached
+    <<: *player1-enemy
     ports:
       - 8003:8000
   player4:
-    <<: *fastapi
-    volumes:
-      - ./docker-resources/player4:/app:cached
+    <<: *player1-enemy
     ports:
       - 8004:8000
