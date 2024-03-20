@@ -33,7 +33,14 @@ services:
     ports:
       - 8001:8000
   player2:
-    <<: *fastapi
+    build:
+      context: docker-resources/player2
+    working_dir: /app
+    healthcheck:
+      test: "curl -f http://localhost:8000/health || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - ./docker-resources/player2:/app:cached
     ports:
