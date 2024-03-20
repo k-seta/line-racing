@@ -250,7 +250,7 @@ func eval(body RequestBody) int {
 	}
 
 	// 各マスへの距離が threshold 以下のマス目の合計を計算
-	threshold := 30
+	threshold := 50
 	for y := 0; y < len(body.Board); y++ {
 		for x := 0; x < len(body.Board[y]); x++ {
 			for _, head := range body.Heads {
