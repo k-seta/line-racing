@@ -125,7 +125,7 @@ func next_generation(body RequestBody) map[int][]RequestBody {
 		}
 	}
 
-	nheads := [][]Coordinate{[]Coordinate{}}
+	nheads := [][]Coordinate{{}}
 	for _, head := range body.Heads {
 
 		if len(candidates[head.ID]) == 0 {
@@ -175,7 +175,7 @@ func next_generation(body RequestBody) map[int][]RequestBody {
 		if _, ok := nbodies[mapkey]; ok {
 			nbodies[mapkey] = append(nbodies[mapkey], RequestBody{ID: body.ID, Heads: heads, Board: nboard})
 		} else {
-			nbodies[mapkey] = []RequestBody{RequestBody{ID: body.ID, Heads: heads, Board: nboard}}
+			nbodies[mapkey] = []RequestBody{{ID: body.ID, Heads: heads, Board: nboard}}
 		}
 	}
 
