@@ -55,7 +55,7 @@ func next(c echo.Context) error {
 		return err
 	}
 
-	evals := recursiveEval(body, 1)
+	evals := recursiveEval(body, 0)
 	fmt.Println(body.Heads)
 	fmt.Println(evals)
 
