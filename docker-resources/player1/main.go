@@ -264,6 +264,10 @@ func eval(body RequestBody) int {
 				// from head to (x, y)
 				_, length := shortests[head.ID].To(int64(key(x, y)))
 				lengthMap[head.ID] = length
+
+				if !math.IsInf(length, 1) {
+					evals[head.ID]++
+				}
 			}
 
 			counter := 0
