@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"math"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -59,7 +60,7 @@ func next(c echo.Context) error {
 	fmt.Println(evals)
 
 	npos := -1
-	evalMax := float64(-1.0)
+	evalMax := math.Inf(-1)
 	for mapKey, value := range evals {
 		if value >= evalMax {
 			evalMax = value
