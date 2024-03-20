@@ -253,24 +253,32 @@ func eval(body RequestBody) int {
 		evals[head.ID] = 0
 	}
 
-	// 各マスへの距離が threshold 以下のマス目の合計を計算
-	threshold := 50
+	// head からの距離が一番短いマス目の合計を計算
 	for y := 0; y < len(body.Board); y++ {
 		for x := 0; x < len(body.Board[y]); x++ {
+			lengthMap := map[int]float64{}
 			for _, head := range body.Heads {
 
 				// from head to (x, y)
 				_, length := shortests[head.ID].To(int64(key(x, y)))
+				lengthMap[head.ID] = length
+			}
 
-				if length < float64(threshold) {
-					evals[head.ID]++
+			counter := 0
+			ownerid := -1
+			minLength := math.Inf(1)
+			for headId, length := range lengthMap {
+				if length < minLength {
+					counter = 0
+					ownerid = headId
+					minLength = length
+				} else if length == minLength {
+					counter++
 				}
+			}
 
-				for _, ohead := range body.Heads {
-					if ohead.ID != head.ID && ohead.CoordX == head.CoordX && ohead.CoordY == head.CoordY {
-						evals[head.ID] -= 100
-					}
-				}
+			if counter == 0 {
+				evals[ownerid]++
 			}
 		}
 	}
