@@ -59,7 +59,7 @@ func next(c echo.Context) error {
 	fmt.Println(evals)
 
 	npos := -1
-	evalMax := float32(-1.0)
+	evalMax := float64(-1.0)
 	for mapKey, value := range evals {
 		if value >= evalMax {
 			evalMax = value
@@ -286,9 +286,9 @@ func eval(body RequestBody) int {
 	return result
 }
 
-func recursiveEval(body RequestBody, generation int) map[int]float32 {
+func recursiveEval(body RequestBody, generation int) map[int]float64 {
 
-	evals := map[int]float32{}
+	evals := map[int]float64{}
 	if generation == 0 {
 		candidates := next_generation(body)
 
@@ -298,7 +298,7 @@ func recursiveEval(body RequestBody, generation int) map[int]float32 {
 			for _, ngen := range ngens {
 				tmp += eval(ngen)
 			}
-			evals[mapkey] = float32(tmp) / float32(len(ngens))
+			evals[mapkey] = float64(tmp) / float64(len(ngens))
 		}
 		return evals
 	}
