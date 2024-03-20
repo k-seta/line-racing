@@ -266,6 +266,7 @@ func eval(body RequestBody) int {
 				lengthMap[head.ID] = length
 
 				if !math.IsInf(length, 1) {
+					// 到達できるマスの絶対数を加味
 					evals[head.ID]++
 				}
 			}
@@ -284,13 +285,15 @@ func eval(body RequestBody) int {
 			}
 
 			if counter == 0 {
-				evals[ownerid]++
+				// 自分だけが到達できるマスの絶対数を加味
+				evals[ownerid] += 5
 			}
 		}
 	}
 
 	result := 0
 	for _, head := range body.Heads {
+		// 相手との評価値の差を加味
 		if body.ID == head.ID {
 			result += evals[head.ID]
 		} else {
