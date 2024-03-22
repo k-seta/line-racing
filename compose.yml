@@ -50,14 +50,23 @@ services:
       timeout: 5s
       retries: 5
   player2:
-    <<: *player1-enemy
+    # <<: *player1-enemy
+    <<: *fastapi
+    volumes:
+      - ./docker-resources/player2:/app:cached
     ports:
       - 8002:8000
   player3:
-    <<: *player1-enemy
+    # <<: *player1-enemy
+    <<: *fastapi
+    volumes:
+      - ./docker-resources/player3:/app:cached
     ports:
       - 8003:8000
   player4:
-    <<: *player1-enemy
+    # <<: *player1-enemy
+    <<: *fastapi
+    volumes:
+      - ./docker-resources/player4:/app:cached
     ports:
       - 8004:8000
