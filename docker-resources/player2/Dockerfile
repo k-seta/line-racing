@@ -1,6 +1,18 @@
-FROM python:3.12.2-slim
+FROM golang:1.22.1-alpine3.19 AS builder
 
-RUN apt update && apt install -y curl
+WORKDIR /app
+
+COPY . .
+RUN go mod download
+RUN go build -o main /app
+
+FROM alpine:3.19 AS runner
+
+WORKDIR /app
+
+RUN apk update && apk add curl
+
+COPY --from=builder /app/main .
 
 EXPOSE 8000
 
