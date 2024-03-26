@@ -3,14 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"math"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/path"
 	"gonum.org/v1/gonum/graph/simple"
 )
@@ -33,10 +31,6 @@ type RequestBody struct {
 
 type ResponseModel struct {
 	Ops string `json:"ops"`
-}
-
-type ShortestMap struct {
-	Values map[int]float64
 }
 
 func main() {
@@ -190,19 +184,6 @@ func next_generation(body RequestBody) map[int][]RequestBody {
 	return nbodies
 }
 
-// Manhattan Heuristic
-func heuristic(u, v graph.Node) float64 {
-	uid := u.ID()
-	cu := (uid % 10)
-	ru := (uid - cu) / 10
-
-	vid := v.ID()
-	cv := (vid % 10)
-	rv := (vid - cv) / 10
-
-	return math.Abs(float64(ru-rv)) + math.Abs(float64(cu-cv))
-}
-
 func eval(body RequestBody) int {
 	// 初期化処理
 	// graph の node 作成
@@ -263,22 +244,12 @@ func eval(body RequestBody) int {
 		}
 	}
 
-	shortests := map[int]ShortestMap{}
+	shortests := map[int]path.Shortest{}
 	evals := map[int]int{}
 	for _, head := range body.Heads {
 
 		// 各マスへの最短経路を計算
-		m := map[int]float64{}
-		for y := 0; y < len(body.Board); y++ {
-			for x := 0; x < len(body.Board[y]); x++ {
-				mapKey := key(x, y)
-				shortest, _ := path.AStar(simple.Node(key(head.CoordX, head.CoordY)), simple.Node(mapKey), graph, heuristic)
-				_, weight := shortest.To(int64(key(0, 0)))
-				m[mapKey] = weight
-			}
-		}
-
-		shortests[head.ID] = ShortestMap{Values: m}
+		shortests[head.ID] = path.DijkstraFrom(simple.Node(key(head.CoordX, head.CoordY)), graph)
 
 		// 評価値格納 map 初期化
 		evals[head.ID] = 0
@@ -291,11 +262,10 @@ func eval(body RequestBody) int {
 			for _, head := range body.Heads {
 
 				// from head to (x, y)
-				length := shortests[head.ID].Values[key(x, y)]
+				_, length := shortests[head.ID].To(int64(key(x, y)))
+				lengthMap[head.ID] = length
 
 				if !math.IsInf(length, 1) {
-					lengthMap[head.ID] = length
-
 					// 到達できるマスの絶対数を加味
 					evals[head.ID]++
 				}
@@ -314,14 +284,12 @@ func eval(body RequestBody) int {
 				}
 			}
 
-			if counter == 0 && ownerid != -1 {
+			if counter == 0 {
 				// 自分だけが到達できるマスの絶対数を加味
 				evals[ownerid] += 5
 			}
 		}
 	}
-
-	fmt.Println(evals)
 
 	result := 0
 	for _, head := range body.Heads {
