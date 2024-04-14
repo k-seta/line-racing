@@ -26,6 +26,8 @@ services:
         condition: service_healthy
       player4:
         condition: service_healthy
+      player5:
+        condition: service_healthy
   player1:
     <<: *fastapi
     volumes:
@@ -55,3 +57,9 @@ services:
       - ./docker-resources/player4:/app:cached
     ports:
       - 8004:8000
+  player5:
+    <<: *fastapi
+    volumes:
+      - ./docker-resources/player5:/app:cached
+    ports:
+      - 8005:8000
