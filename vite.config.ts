@@ -22,6 +22,11 @@ export default defineConfig({
         target: "http://localhost:8004",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/p4/, ''),
+      },
+      "/p5": {
+        target: "http://localhost:8005",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/p5/, ''),
       }
     },
   },

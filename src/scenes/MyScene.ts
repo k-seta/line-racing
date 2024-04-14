@@ -27,6 +27,7 @@ export default class MyScene extends Phaser.Scene {
     this.players.push(new Player("Player2", 2, 0x00ff00, { x: 22, y: 7 }, "/p2/v1/next", this.add.text(1030, 200, "")))
     this.players.push(new Player("Player3", 3, 0x00ffff, { x: 7, y: 12 }, "/p3/v1/next", this.add.text(1030, 300, "")))
     this.players.push(new Player("Player4", 4, 0xf5b2b2, { x: 22, y: 12 }, "/p4/v1/next", this.add.text(1030, 400, "")))
+    // this.players.push(new Player("Player5", 5, 0xf5b2b2, { x: 22, y: 12 }, "/p5/v1/next", this.add.text(1030, 400, "")))
 
     await this.board.update(this.players);
 
