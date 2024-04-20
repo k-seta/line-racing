@@ -17,22 +17,23 @@ func main() {
 
 type Head struct {
 	ID int `json:"id"`
-	X int `json:"x"`
-	Y int `json:"y"`
+	X  int `json:"x"`
+	Y  int `json:"y"`
 }
 
 type RequestModel struct {
-	ID int `json:"id"`
-	Heads []Head `json:"heads"`
+	ID    int     `json:"id"`
+	Heads []Head  `json:"heads"`
 	Board [][]int `json:"board"`
 }
 
 type Ops string
+
 const (
-	NONE Ops = "checkmated"
-	UP Ops = "up"
-	DOWN Ops = "down"
-	LEFT Ops = "left"
+	NONE  Ops = "checkmated"
+	UP    Ops = "up"
+	DOWN  Ops = "down"
+	LEFT  Ops = "left"
 	RIGHT Ops = "right"
 )
 
@@ -64,7 +65,6 @@ func ReadRequest(r *http.Request) *RequestModel {
 	return &req
 }
 
-
 // ヘルスチェック
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -84,33 +84,76 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 // コマンド
 
 func nextHandler(w http.ResponseWriter, r *http.Request) {
-	req := ReadRequest(r)
+	debug.Reset()
 
+	// リクエストから情報を取得
+	req := ReadRequest(r)
 	id := req.ID
 	heads := req.Heads
 	board := req.Board
 
-	var myHead Head // 自分のヘッド
+	var myHead Head       // 自分のヘッド
+	var otherHeads []Head // 他のヘッド
 	for _, head := range heads {
 		if head.ID == id {
 			myHead = head
-			break
+		} else {
+			otherHeads = append(otherHeads, head)
 		}
 	}
 
-	var ops Ops
-	switch {
-	case myHead.Y > 0 && board[myHead.Y-1][myHead.X] == 0:
-		ops = UP
-	case myHead.X < 29 && board[myHead.Y][myHead.X+1] == 0:
-		ops = RIGHT
-	case myHead.X > 0 && board[myHead.Y][myHead.X-1] == 0:
-		ops = LEFT
-	case myHead.Y < 19 && board[myHead.Y+1][myHead.X] == 0:
-		ops = DOWN
-	default:
-		ops = NONE
+	var turn int // 自分のターン数 = 自idマスの数
+	for _, row := range board {
+		for _, cell := range row {
+			if cell == id {
+				turn++
+			}
+		}
 	}
 
-	WriteResponse(w, &ResponseModel{Ops: ops})
+	// 初動戦略
+	if turn <= 15 {
+		ops := Initial(myHead, board, turn)
+		debug.PrintDecision()
+		WriteResponse(w, &ResponseModel{Ops: ops})
+		return
+	}
+
+	// BG初期化
+	bumpGuard := NewBumpGuard(myHead, otherHeads, board)
+	debug.PrintBumpGuard(bumpGuard)
+
+	// ボードに衝突回避を適用
+	board = BoardBumpGuard(board, myHead, heads)
+
+	/*
+	 * NOTE:
+	 * BFS, Greedy, GreedyBT の３つの戦略を試行し、最もスコアの高い戦略を採択する。
+	 * Greedy, GreedyBT は BumpGuard あり。BFS は BumpGuard なし。
+	 *
+	 * 結果的に、
+	 * - 他Headと近い → BFSで遠くに避難
+	 * - 他Headと遠い → Greedy系で最長経路を辿る
+	 * というアルゴリズムになった。
+	 * 近さと戦略のバランスはbumpGuard.CalcPenaltyのべき数で調整できる。
+	 * 14だと、だいたい7マス以内に敵がいるとBFSを選ぶ。
+	 */
+	var maxScore int
+	var maxOps Ops
+	if ops, score := BFS(myHead, board, nil); score > maxScore {
+		maxScore = score
+		maxOps = ops
+	}
+	if ops, score := Greedy(myHead, board, bumpGuard); score > maxScore {
+		maxScore = score
+		maxOps = ops
+	}
+	if ops, score := GreedyBT(myHead, board, bumpGuard); score > maxScore {
+		maxOps = ops
+	}
+
+	debug.PrintScores()
+	debug.PrintDecision()
+
+	WriteResponse(w, &ResponseModel{Ops: maxOps})
 }
