@@ -29,11 +29,18 @@ services:
       player5:
         condition: service_healthy
   player1:
-    <<: *fastapi
+    image: local/echo-player1:latest
+    build:
+      context: docker-resources/player1
     volumes:
-      - ./docker-resources/player1:/app:cached
+      - ./docker-resources/player1:/go/src/app:cached
     ports:
       - 8001:8000
+    healthcheck:
+      test: "curl -f http://localhost:8000/health || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
   player2:
     build:
       context: docker-resources/player2
