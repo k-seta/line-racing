@@ -42,19 +42,6 @@ def create_user(body: RequestBody):
   # 自機のIDと現在座標を取得
   head = next(filter(lambda x: x.id == body.id, body.heads), Coordinate(-1, -1, -1))
 
-  for ops in EnumOps:
-      if(ops == EnumOps.up):
-        dest = Coordinate(body.id, head.x, head.y - 1)
-      elif(ops == EnumOps.right):
-        dest = Coordinate(body.id, head.x + 1, head.y)
-      elif(ops == EnumOps.left):
-        dest = Coordinate(body.id, head.x - 1, head.y)
-      elif(ops == EnumOps.down):
-        dest = Coordinate(body.id, head.x, head.y + 1)
-
-      if(dest.x >= 0 and dest.y >= 0 and dest.x < len(body.board[0]) and dest.y < len(body.board) and body.board[dest.y][dest.x] == 0):
-        return ResponseModel(ops)
-
   # 次ターンの進路スコア
   scores = {
     EnumOps.up: 0,
@@ -84,8 +71,6 @@ def create_user(body: RequestBody):
   return strategy_random(scores)
 
   # TODO: ここまでを独自のアルゴリズムに修正する
-
-  return ResponseModel(EnumOps.checkmated)
 
 ### utils ##########
 # スコアリングや方向決定戦略に絡まない便利機能
